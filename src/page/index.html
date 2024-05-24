@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Popup</title>
+	<link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+	<header>
+		<div>Bookmarks Search</div>
+
+		<div id="search-bar">
+			<div id="search-bar-icon">
+				<object data="/public/search.svg"></object>
+			</div>
+			<div id="search-bar-text">
+				<textarea id="search-bar-search" autofocus="" title="Search" value="" autocomplete="off" autocorrect="off" maxlength="2048" spellcheck="false"></textarea>
+			</div>
+		</div>
+
+		<div id="global-options">
+			<object data="/public/dots-vertical.svg"></object>
+		</div>
+
+	</header>
+	
+	<div id="content">
+		<div id="sidebar">
+		</div>
+		<div id="container">
+		</div>
+	</div>
+
+	<script type="module" src="./index.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,47 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 16px;
+}
+
+body {
+	display: flex;
+	background-color: lightgrey;
+	min-height: 100vh;
+	flex-direction: column;
+}
+
+header {
+	padding-top: 2vh;
+	flex: 0 1;
+
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: space-between;
+
+	background-color: antiquewhite;
+}
+
+#search-bar {
+	display: flex;
+	align-items: center;
+}
+
+#content{
+	flex: 1;
+	display: flex;
+
+}
+
+#container{
+	flex: 1;
+}
+#sidebar{
+	min-width: 20vw;
+	background-color: gainsboro;
+}

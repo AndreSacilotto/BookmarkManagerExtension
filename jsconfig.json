@@ -1,0 +1,13 @@
+{
+	"typeAcquisition": {
+		"include": ["chrome"]
+	},
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "es6",
+		"baseUrl": ".",
+		"paths": {
+			"/src/*": ["src/*"]
+		},
+	},
+}
