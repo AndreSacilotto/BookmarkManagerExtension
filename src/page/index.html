@@ -11,19 +11,22 @@
 
 <body>
 	<header>
-		<div>Bookmarks Search</div>
+		<div id="logo">
+			<img src="/icons/icon_512.png" alt="extension-icon">
+			<div>Bookmarks</div>
+		</div>
 
 		<div id="search-bar">
 			<div id="search-bar-icon">
-				<object data="/public/search.svg"></object>
+				<img src="/public/search.svg" alt="search"></img>
 			</div>
 			<div id="search-bar-text">
-				<textarea id="search-bar-search" autofocus="" title="Search" value="" autocomplete="off" autocorrect="off" maxlength="2048" spellcheck="false"></textarea>
+				<input type="text" id="search-bar-area" autofocus="" title="Search" value="" autocomplete="off" autocorrect="off" maxlength="2048" spellcheck="false"></input>
 			</div>
 		</div>
 
 		<div id="global-options">
-			<object data="/public/dots-vertical.svg"></object>
+			<img src="/public/dots-vertical.svg" alt="global-options"></img>
 		</div>
 
 	</header>
@@ -31,6 +34,7 @@
 	<div id="content">
 		<div id="sidebar">
 		</div>
+		<div id="splitter" draggable="false"></div>
 		<div id="container">
 		</div>
 	</div>

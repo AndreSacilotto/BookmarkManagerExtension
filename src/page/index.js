@@ -1,28 +1,42 @@
 
-//#region GLOBAL
-
+//#region DOM
 /** @type {HTMLDivElement} */
 const search_bar = document.getElementById("search-bar");
 /** @type {HTMLTextAreaElement} */
-const search_bar_text = document.getElementById("search-bar-search");
+const search_bar_area = document.getElementById("search-bar-area");
 /** @type {HTMLDivElement} */
 const container = document.getElementById("container");
+/** @type {HTMLDivElement} */
+const sidebar = document.getElementById("sidebar");
 
-/** @type {NodeBookmarkSearchItem} */
-const poll = {}
+/** @type {HTMLDivElement} */
+const splitter = document.getElementById("splitter");
+splitter.ondrag = splitter.ondragend = (ev) => {
+	sidebar.style.width = ev.pageX + "px";
+}
+splitter.ondragstart = (ev) => {
+	ev.dataTransfer.effectAllowed = "none";
+}
 
-/** @type {BookmarkItem} */
-const _flatBookmarks = [];
+const searchChange = (ev) => searchText(ev.target.value);
+search_bar_area.addEventListener("keyup", searchChange);
+search_bar_area.addEventListener("change", searchChange);
+
+//#endregion
+
+//#region Vars
+
+/** @type {NodeBookmarkSearchItem[]} */
+var bookmarksNodes;
 
 // #endregion
 
 //#region Entry Point
 
 async function _main() {
-	const b = await getBookmarksTree()
-	console.log(b);
 	const c = await getBookmarksFlat();
-	console.log(c);
+	bookmarksNodes = buildBookmarks(c);
+	// console.log(bookmarksNodes);
 }
 _main();
 
@@ -34,19 +48,54 @@ function Update() {
 
 //#region Functions
 
+/** @type {HTMLDivElement} */
+var itemContainer;
+function newItemContainer() {
+	if (itemContainer)
+		container.removeChild(itemContainer);
+	itemContainer = document.createElement("div");
+	itemContainer.className = "items-container";
+	container.appendChild(itemContainer);
+}
+
+/** @type {string} */
+var lastText;
+/** @param {string} str */
+function searchText(str) {
+	if (!str || str.length == 0)
+		return;
+	str = str.toLowerCase();
+	if (lastText === str)
+		return;
+	lastText = str;
+
+	newItemContainer();
+
+	bookmarksNodes.forEach(x => {
+		const r = x.ref;
+		if (r.title.includes(str) || (r.url && r.url.includes(str)))
+			itemContainer.appendChild(x.item);
+	});
+	
+	requestAnimationFrame(() => {});
+}
 
 class BookmarkItem {
 	/** @param {chrome.bookmarks.BookmarkTreeNode} item */
 	constructor(item) {
-		this.isFolder = Object.hasOwn(item, "children");
-
+		/** @type {boolean} */
+		this.isFolder = item.url === undefined || Object.hasOwn(item, "children");
+		/** @type {string} */
 		this.id = item.id;
+		/** @type {string|undefined} */
 		this.parentId = item.parentId;
+		/** @type {number|undefined} */
 		this.index = item.index;
-
+		/** @type {string} */
 		this.title = item.title;
+		/** @type {string|undefined} */
 		this.url = item.url;
-		resetIcon();
+		this.resetIcon();
 	}
 	resetIcon() {
 		this.iconURL = this.isFolder ? "/public/icon_folder.svg" : "/public/icon_missing.png";
@@ -62,28 +111,69 @@ class NodeBookmarkSearchItem {
 		this.ref = null;
 
 		this.item = document.createElement("div");
-		item.className = "bookmark-item";
+		this.item.className = "bookmark-item";
+		// this.item.target = "_blank";
+		// this.item.rel = "noopener noreferrer";
+		this.item.addEventListener("click", () => this.select());
+		this.item.addEventListener("dblclick", () => this.openUrl());
 
 		this.icon = this.item.appendChild(document.createElement("img"));
-		icon.className = "bookmark-item-icon";
+		this.icon.className = "bookmark-item-icon";
+		this.icon.alt = "bookmark-icon"
 
 		this.title = this.item.appendChild(document.createElement("div"));
-		title.className = "bookmark-item-title";
+		this.title.className = "bookmark-item-title";
 
 		this.link = this.item.appendChild(document.createElement("div"));
-		link.className = "bookmark-item-link";
+		this.link.className = "bookmark-item-link";
 
 		this.edit = this.item.appendChild(document.createElement("div"));
-		edit.className = "bookmark-item-edit";
+		this.edit.className = "bookmark-item-edit";
+
+		this.selected = false;
 	}
 	/** @param {BookmarkItem} item */
 	fill(item) {
 		this.ref = item;
 		this.icon.src = item.iconURL;
-		this.link.innerHTML = item.url;
 		this.title.innerHTML = item.title;
+		if (item.url)
+		{
+			this.link.innerHTML = item.url;
+			this.item.href = item.url;
+		}
+		this.item.classList.add(item.isFolder ? "folder" : "not-folder");
+	}
+	select(){
+		this.selected = !this.selected;
+		if(this.selected)
+			this.item.classList.add("selected");
+		else
+			this.item.classList.remove("selected");
+		console.log(this.selected);
+	}
+	openUrl(){
+		const url = this.ref.url;
+		if(!url)
+			return;
+		chrome.tabs.create({ url })
 	}
 }
+
+/** @param {chrome.bookmarks.BookmarkTreeNode[]} buffer  */
+function buildBookmarks(buffer) {
+	return buffer.map(el => {
+		const item = new BookmarkItem(el);
+		// item.setIcon();
+		const node = new NodeBookmarkSearchItem();
+		node.fill(item);
+		return node;
+	});
+}
+
+// #endregion
+
+//#region Chrome
 
 async function getBookmarksTree() {
 	return await chrome.bookmarks.getTree();
@@ -95,7 +185,8 @@ async function getBookmarksFlat(bookmarks) {
 	/** @type {chrome.bookmarks.BookmarkTreeNode[]} */
 	const arr = [];
 
-	deep(arr, books[0]);
+	// 0 root | 0,0 bookmarks bar | 0,1 all bookmarks
+	[...books[0].children[0].children, ...books[0].children[1].children].forEach(x => deep(arr, x));
 
 	/** @param {chrome.bookmarks.BookmarkTreeNode} item */
 	function deep(buffer, item) {
