@@ -1,1 +1,0 @@
-chrome.tabs.create({ url: chrome.runtime.getURL("src/page/index.html") })
